@@ -7,7 +7,7 @@
     "test": "test"
   },
   "scripts": {
-    "test": "ava"
+    "test": "tap"
   },
   "author": "Leon",
   "license": "ISC",
@@ -15,7 +15,10 @@
     "@stryker-mutator/core": "^2.5.0",
     "@stryker-mutator/html-reporter": "^2.5.0",
     "@stryker-mutator/typescript": "^2.5.0",
+    "@types/tape": "^4.2.34",
     "ava": "^3.4.0",
+    "tap": "^14.10.6",
+    "tape": "^4.13.0",
     "ts-node": "^8.6.2",
     "typescript": "^3.8.2"
   },

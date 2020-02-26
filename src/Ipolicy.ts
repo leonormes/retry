@@ -31,7 +31,7 @@ export class constantPolicy implements Ipolicy {
     }
 }
 
-class expoPolicy implements Ipolicy {
+export class expoPolicy implements Ipolicy {
     public max_tries: number
     public max_time: number
     private init_wait_time: number
