@@ -6,7 +6,7 @@ interface Ipolicy {
     increment_try: () => void
 }
 
-class linearPolicy implements Ipolicy {
+export class constantPolicy implements Ipolicy {
     public max_tries: number
     public max_time: number
     private init_wait_time: number
