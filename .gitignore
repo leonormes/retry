@@ -5,3 +5,4 @@ node_modules
 .nyc_output
 reports/**/*
 reports/mutation/html/bind-mutation-test-report.js
+dist
