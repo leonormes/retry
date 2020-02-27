@@ -1,7 +1,7 @@
 import test from "tape";
 import { ConstantPolicy, ExpoPolicy } from '../src/Ipolicy'
 
-test('constantPolicy', (t: any) => {
+test('constantPolicy', (t: test.Test) => {
 	const pol = new ConstantPolicy()
 	const pol0 = new ConstantPolicy(0)
 	const pol1 = new ConstantPolicy(1)
@@ -14,7 +14,7 @@ test('constantPolicy', (t: any) => {
 	t.false(pol1.canRetry())
 	t.end()
 } )
-test('expoPolicy', (t: any) => {
+test('expoPolicy', (t: test.Test) => {
 	const pol = new ExpoPolicy()
 	const pol0 = new ExpoPolicy(0)
 	const pol1 = new ExpoPolicy(1)
