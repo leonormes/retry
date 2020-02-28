@@ -4,5 +4,4 @@ node_modules
 .stryker-tmp
 .nyc_output
 reports/**/*
-reports/mutation/html/bind-mutation-test-report.js
 dist

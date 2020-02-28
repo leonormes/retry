@@ -7,7 +7,7 @@
     "test": "test"
   },
   "scripts": {
-    "test": "tap --files=test/**/*.ts"
+    "test": "tap"
   },
   "author": "Leon",
   "license": "ISC",
