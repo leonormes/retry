@@ -1,24 +1,27 @@
 import test from 'tape';
-import sinon, { stubInterface } from 'ts-sinon';
+import sinon from 'ts-sinon';
 import { retryer } from '../src/retryer';
 import { ConstantPolicy } from '../src/Ipolicy';
-test('retryer ok', (t: test.Test) => {
-    const functionStub = sinon.stub().returns(true);
-    const policy = new ConstantPolicy();
-    const result = retryer(functionStub, policy);
-    t.true(policy.canRetry());
-    t.true(result);
-    t.true(functionStub.called);
+import { APICaller } from '../src/callAxios';
+test('retryer ok', async (t: test.Test) => {
+    const functionStub = sinon.fake.returns('API call successful');
+    const policy = new ConstantPolicy(2,0);
+    const command = new APICaller(functionStub)
+    const result = await retryer(command, policy);
+
+    t.true(policy.shouldRetry(), 'shouldRetry returned false instead of true');
+    t.true(result === 'API call successful', 'Given function failed');
+    t.true(functionStub.calledOnce, 'function not called exactly once');
     t.end();
 });
 
-test('retryer with error', (t: test.Test) => {
+test('retryer with error', async (t: test.Test) => {
     const fn2 = sinon.fake.throws(new Error('API failed'));
-    const policy2 = new ConstantPolicy(2);
-    const result2 = retryer(fn2, policy2);
+    const policy2 = new ConstantPolicy(2,0);
+    const command = new APICaller<string, string>(fn2);
+    const result2 = await retryer(command, policy2);
 
     t.equal(result2, undefined);
-    console.log(fn2.callCount)
-    t.true(fn2.calledTwice)
+    t.true(fn2.calledTwice, 'function not called twice')
     t.end()
 });
