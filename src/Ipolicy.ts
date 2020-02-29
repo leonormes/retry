@@ -1,4 +1,4 @@
-interface Ipolicy {
+export interface Ipolicy {
   maxTime: number;
   maxTries: number;
   currentWait: () => number;
