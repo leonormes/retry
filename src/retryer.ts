@@ -1,5 +1,6 @@
 import { Ipolicy } from './Ipolicy';
 import { Command } from './callAxios';
+import { delay } from './delay';
 
 export async function retryer(command: Command, policy: Ipolicy) {
     while (true) {
@@ -16,8 +17,4 @@ export async function retryer(command: Command, policy: Ipolicy) {
     }
 }
 
-export function delay(ms: number): Promise<void> {
-    return new Promise(resolve => {
-        setTimeout(resolve, ms);
-    });
-}
+
