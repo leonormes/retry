@@ -1,38 +1,40 @@
 {
-  "name": "retrier",
-  "version": "1.0.0",
-  "description": "Retry library",
-  "main": "index.js",
-  "directories": {
-    "test": "test"
-  },
-  "scripts": {
-    "test": "tap"
-  },
-  "author": "Leon",
-  "license": "ISC",
-  "devDependencies": {
-    "@stryker-mutator/core": "^2.5.0",
-    "@stryker-mutator/html-reporter": "^2.5.0",
-    "@stryker-mutator/typescript": "^2.5.0",
-    "@types/tape": "^4.2.34",
-    "@typescript-eslint/eslint-plugin": "^2.21.0",
-    "@typescript-eslint/parser": "^2.21.0",
-    "ava": "^3.4.0",
-    "eslint": "^6.8.0",
-    "eslint-plugin-node": "^11.0.0",
-    "tap": "^14.10.6",
-    "tape": "^4.13.0",
-    "ts-node": "^8.6.2",
-    "ts-sinon": "^1.0.25",
-    "typescript": "^3.8.2"
-  },
-  "ava": {
-    "extensions": [
-      "ts"
-    ],
-    "require": [
-      "ts-node/register"
-    ]
-  }
+    "name": "retrier",
+    "version": "1.0.0",
+    "description": "Retry library",
+    "main": "index.js",
+    "directories": {
+        "test": "test"
+    },
+    "scripts": {
+        "test": "mocha -r ts-node/register test/**/*_test.ts"
+    },
+    "author": "Leon",
+    "license": "ISC",
+    "devDependencies": {
+        "@stryker-mutator/core": "^2.5.0",
+        "@stryker-mutator/html-reporter": "^2.5.0",
+        "@stryker-mutator/typescript": "^2.5.0",
+        "@types/mocha": "^7.0.2",
+        "@types/tape": "^4.2.34",
+        "@typescript-eslint/eslint-plugin": "^2.21.0",
+        "@typescript-eslint/parser": "^2.21.0",
+        "ava": "^3.4.0",
+        "eslint": "^6.8.0",
+        "eslint-plugin-node": "^11.0.0",
+        "mocha": "^7.1.0",
+        "tap": "^14.10.6",
+        "tape": "^4.13.0",
+        "ts-node": "^8.6.2",
+        "ts-sinon": "^1.0.25",
+        "typescript": "^3.8.2"
+    },
+    "ava": {
+        "extensions": [
+            "ts"
+        ],
+        "require": [
+            "ts-node/register"
+        ]
+    }
 }

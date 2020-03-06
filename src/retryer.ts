@@ -1,8 +1,8 @@
 import { Ipolicy } from './Ipolicy';
-import { Command } from './callAxios';
+import { ICommand } from './callAxios';
 import { delay } from './delay';
 
-export async function retryer(command: Command, policy: Ipolicy) {
+export async function retryer(command: ICommand, policy: Ipolicy) {
     while (true) {
         try {
             policy.incrementTry();

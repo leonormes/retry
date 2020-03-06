@@ -1,12 +1,16 @@
-import test from "tape";
 import { APICaller } from '../src/callAxios';
-import sinon from "sinon";
+import sinon from 'sinon';
+import * as assert from 'assert';
 
-test('command', (t: test.Test)=> {
-    const functionStub = sinon.fake.returns('API call successful');
-    const command = new APICaller(functionStub, 'API Call')
-    command.execute()
-    t.true(functionStub.calledOnce)
-    t.true(functionStub.calledWith('API Call'))
-    t.end()
-})
+describe('command', function() {
+    it('should execute a function with args', async function() {
+        const functionStub = sinon.fake.resolves('API call successful');
+        const command = new APICaller<string, string>(functionStub, 'API Call');
+
+        const result = await command.execute();
+
+        assert.equal(result, 'API call successful')
+        assert.ok(functionStub.calledOnce, 'function not executed exactly once');
+        assert.ok(functionStub.calledWith('API Call'));
+    });
+});

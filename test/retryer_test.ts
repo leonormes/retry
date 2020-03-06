@@ -1,32 +1,37 @@
-import test from 'tape';
 import sinon from 'ts-sinon';
 import { retryer } from '../src/retryer';
 import * as delay from "../src/delay";
 import { ConstantPolicy } from '../src/Ipolicy';
 import { APICaller } from '../src/callAxios';
-test('retryer ok', async (t: test.Test) => {
+import * as assert from 'assert'
+
+describe('retryer ok', function()  {
+    it('should allow retry when tries below max allowed', async function() {
     const functionStub = sinon.fake.returns('API call successful');
     const policy = new ConstantPolicy(2,0);
-    const command = new APICaller(functionStub)
+    const command = new APICaller<sinon.SinonSpy, null>(functionStub);
 
     const result = await retryer(command, policy);
 
-    t.true(policy.shouldRetry(), 'shouldRetry returned false instead of true');
-    t.true(result === 'API call successful', 'Given function failed');
-    t.true(functionStub.calledOnce, 'function not called exactly once');
-    t.end();
+    assert.ok(policy.shouldRetry(), 'shouldRetry returned false instead of true');
+    assert.ok(result === 'API call successful', 'Given function failed');
+    assert.ok(functionStub.calledOnce, 'function not called exactly once');
+
+    })
 });
 
-test('retryer with error', async (t: test.Test) => {
+describe('retryer with error', async function() {
+    it('retyr a given function', async function() {
     const fn2 = sinon.fake.throws(new Error('API failed'));
     const delaySpy = sinon.spy(delay, 'delay')
     const policy2 = new ConstantPolicy(2,0);
-    const command = new APICaller<string, string>(fn2);
+    const command = new APICaller<string, null>(fn2);
 
     const result2 = await retryer(command, policy2);
 
-    t.equal(result2, undefined);
-    t.true(fn2.calledTwice, 'function not called twice')
-    t.true(delaySpy.called, 'delay not called')
-    t.end()
+    assert.equal(result2, undefined);
+    assert.ok(fn2.calledTwice, 'function not called twice')
+    assert.ok(delaySpy.called, 'delay not called')
+
+    })
 });
