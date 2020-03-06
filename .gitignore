@@ -3,5 +3,5 @@ node_modules
 # stryker temp files
 .stryker-tmp
 .nyc_output
-reports
+reports/**/*
 dist
