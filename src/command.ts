@@ -4,8 +4,6 @@ export interface ICommand {
 
 export class Command<T, U> implements ICommand {
            constructor(private fn: (payload: T | undefined) => Promise<U>, private payload?: T) {
-               this.payload = payload;
-               this.fn = fn;
            }
 
            public async execute(): Promise<U> {
