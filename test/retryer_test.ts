@@ -2,14 +2,14 @@ import sinon from 'ts-sinon';
 import { retryer } from '../src/retryer';
 import * as delay from "../src/delay";
 import { ConstantPolicy } from '../src/Ipolicy';
-import { APICaller } from '../src/callAxios';
+import { Command } from '../src/command';
 import * as assert from 'assert'
 
 describe('retryer ok', function()  {
     it('should allow retry when tries below max allowed', async function() {
     const functionStub = sinon.fake.returns('API call successful');
     const policy = new ConstantPolicy(2,0);
-    const command = new APICaller<sinon.SinonSpy, null>(functionStub);
+    const command = new Command<sinon.SinonSpy, null>(functionStub);
 
     const result = await retryer(command, policy);
 
@@ -25,7 +25,7 @@ describe('retryer with error', async function() {
     const fn2 = sinon.fake.throws(new Error('API failed'));
     const delaySpy = sinon.spy(delay, 'delay')
     const policy2 = new ConstantPolicy(2,0);
-    const command = new APICaller<string, null>(fn2);
+    const command = new Command<string, null>(fn2);
 
     const result2 = await retryer(command, policy2);
 

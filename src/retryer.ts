@@ -1,5 +1,5 @@
 import { Ipolicy } from './Ipolicy';
-import { ICommand } from './callAxios';
+import { ICommand } from './command';
 import { delay } from './delay';
 
 export async function retryer(command: ICommand, policy: Ipolicy) {
