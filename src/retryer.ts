@@ -3,6 +3,7 @@ import { ICommand } from './command';
 import { delay } from './delay';
 
 export async function retryer(command: ICommand, policy: Ipolicy) {
+    // eslint-disable-next-line no-constant-condition
     while (true) {
         try {
             policy.incrementTry();
@@ -16,5 +17,3 @@ export async function retryer(command: ICommand, policy: Ipolicy) {
         }
     }
 }
-
-

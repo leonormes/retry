@@ -9,7 +9,7 @@ describe('command', function() {
 
         const result = await command.execute();
 
-        assert.equal(result, 'API call successful')
+        assert.equal(result, 'API call successful');
         assert.ok(functionStub.calledOnce, 'function not executed exactly once');
         assert.ok(functionStub.calledWith('API Call'));
     });
