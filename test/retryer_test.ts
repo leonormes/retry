@@ -23,12 +23,12 @@ describe('retryer with error', async function() {
     it('retyr a given function', async function() {
         const fn2 = sinon.fake.throws(new Error('API failed'));
         const delaySpy = sinon.spy(delay, 'delay');
-        const policy2 = new ConstantPolicy(2, 0);
+        const policy = new ConstantPolicy(2, 0);
         const command = new Command<string, null>(fn2);
 
-        const result2 = await retryer(command, policy2);
+        const result = await retryer(command, policy);
 
-        assert.equal(result2, undefined);
+        assert.equal(result, undefined);
         assert.ok(fn2.calledTwice, 'function not called twice');
         assert.ok(delaySpy.called, 'delay not called');
     });
