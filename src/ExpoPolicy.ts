@@ -1,12 +1,5 @@
-export interface Ipolicy {
-    maxTime: number;
-    maxTries: number;
-    currentWait: () => number;
-    shouldRetry: () => boolean;
-    incrementTry: () => void;
-}
-
-export class SLAPolicy implements Ipolicy {
+import { Ipolicy } from "./Ipolicy";
+export class ExpoPolicy implements Ipolicy {
     public maxTime: number;
     private retryCount: number;
     constructor(public maxTries: number = 5, private initWaitTime: number = 500) {

@@ -1,4 +1,5 @@
-import { ConstantPolicy, ExpoPolicy } from '../src/Ipolicy';
+import { ExpoPolicy } from "../src/ExpoPolicy";
+import { ConstantPolicy } from "../src/ConstantPolicy";
 import * as assert from 'assert';
 
 describe('constantPolicy', function() {

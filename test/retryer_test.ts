@@ -1,7 +1,7 @@
 import sinon from 'ts-sinon';
 import { retryer } from '../src/retryer';
 import * as delay from '../src/delay';
-import { ConstantPolicy } from '../src/Ipolicy';
+import { ConstantPolicy } from "../src/ConstantPolicy";
 import { Command } from '../src/command';
 import * as assert from 'assert';
 
@@ -19,7 +19,7 @@ describe('retryer ok', function() {
     });
 });
 
-describe('retryer with error', async function() {
+describe('retryer with error', function() {
     it('retyr a given function', async function() {
         const fn2 = sinon.fake.throws(new Error('API failed'));
         const delaySpy = sinon.spy(delay, 'delay');
