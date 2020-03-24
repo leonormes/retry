@@ -1,4 +1,4 @@
-import { Ipolicy } from "./Ipolicy";
+import { Ipolicy } from './Ipolicy';
 export class ExpoPolicy implements Ipolicy {
     public maxTime: number;
     private retryCount: number;
