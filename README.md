@@ -116,7 +116,7 @@ export class ConstantPolicy implements Ipolicy {
             return false
         } else if (this.retryCount < this.maxTries) {
             return true;
-      err
+        } 
         return false;
     }
     incrementTry() {
@@ -143,7 +143,7 @@ export class ExpoPolicy implements Ipolicy {
             return false
         } else if (this.retryCount < this.maxTries) {
             return true;
-      err
+        }
         return false;
     }
     incrementTry() {
