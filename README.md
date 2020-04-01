@@ -129,10 +129,8 @@ Another strategy we could take with retries is to back off trying exponentially 
 
 ```typescript
 export class ExpoPolicy implements Ipolicy {
-    public maxTime: number;
     private retryCount: number;
     constructor(public maxTries: number = 5, private initWaitTime: number = 500) {
-        this.maxTime = maxTries * initWaitTime;
         this.retryCount = 0;
     }
     currentWait() {
@@ -219,7 +217,7 @@ This command class makes it easy to encapsulate our function.
 const command = new Command(callAPIFn, argsAndPayload);
 ```
 
-Refactoring the above example to use the command pattern would look something like;
+Refactoring our original example to use the command pattern would look something like;
 
 ```typescript
 class ApiCommand<T, U> implements ICommand {
@@ -292,12 +290,6 @@ class ApiCommand<T, U> implements ICommand {
     }
 }
 
-const endpoint = 'v1/mickey/mouse'
-
-const payload = {id: 1, ear: 'big', braces: true}
- 
-const apiCommand = new ApiCommand(apiCall, endpoint, payload)
-
 export class ConstantPolicy implements Ipolicy {
     private retryCount: number;
     constructor(public maxTries: number = 5, private initWaitTime: number = 500) {
@@ -332,6 +324,20 @@ export async function retryer(command: ICommand, policy: Ipolicy) {
             }
         }
     }
+}
+
+const policy = new ConstantPolicy()
+
+const endpoint = 'v1/mickey/mouse'
+
+const payload = {id: 1, ears: 'big', braces: true}
+ 
+const apiCommand = new ApiCommand(apiCall, endpoint, payload)
+
+try {
+    const result = await retryer(apiCommand, policy)
+} catch(err) {
+    log(err);
 }
 ```
 Rather than re implementing the retry logic each time and mixing this logic in with what ever is being retried we can seperate things making it easier to test and easier to change in future.
