@@ -107,8 +107,10 @@ export class ConstantPolicy implements Ipolicy {
     currentWait() {
         return this.initWaitTime;
     }
-    shouldRetry() {
-        if (this.retryCount < this.maxTries) {
+    shouldRetry(err) {
+        if (err.response && err.response.status >= 400) {
+            return false
+        } else if (this.retryCount < this.maxTries) {
             return true;
         }
         return false;
@@ -188,7 +190,7 @@ Refactoring the above example to use the command pattern would look something li
 
 ```typescript
 class ApiCommand<T, U> implements ICommand {
-    constructor(private fn:(endpoint:string,payload: T) =>Promise<U>, private endpoint:string, private payload:T) {}
+    constructor(private fn: (endpoint: string, payload: T) => Promise<U>, private endpoint: string, private payload: T) {}
      
     public async execute(): Promise<U> {
         return await this.fn(this.endpoint, this.payload);
@@ -213,7 +215,7 @@ export async function retryer(command: ICommand, policy: Ipolicy) {
             policy.incrementTry();
             return await command.execute();
         } catch (error) {
-            if (policy.shouldRetry()) {
+            if (policy.shouldRetry(err)) {
                 await delay(policy.currentWait());
             } else {
                 return;
