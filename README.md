@@ -1,20 +1,6 @@
 # retrier
 # Design Patterns in Typescript
 
-As programmers, we are drawn to problems. Not just because we find them interesting but because we want them gone. We hate not knowing the solution to a seemingly complex task or that something has a weird intermittent bug, or that we have to keep repeating mundane tasks, so we fix them or we suffer.
-
-The best problems to solve are those that are root problems with lots of symptoms. It might be crucial to fix a symptom now to get on with your work, but the real satisfaction comes from solving a root cause and seeing all those other problems disappear. 
-
-A root cause problem like this is code quality or code organisation. That is, how to organise code so that it is maintainable in future. How do we get work done safely and on time now without hampering future efforts to get work done safely and on time? The problem is common and one that all developers understand and agree needs fixingt
-
-Writing code that is easy to change is a fundamental principle the has huge consequences for the maintainability of a codebase. This is not an easy or intuitive process. In fact, it seems to be a constant struggle and just searching online or reading the views of veteran developers you will see that it is a hugely expensive and dangerous problem. I am going to assume that even if you don't write hard to maintain code you probably see others doing it all the time! 
-
-Our job as professional developers is to get product features in the hands of our users as quickly and efficiently as possible. This is an ongoing effort that always needs an eye on the future. For instance, when a codebase is new and less complex it is straightforward to write code quickly and get it to production. This is very satisfying to us and like a lottery winner we go overboard spending all the flexibility in the code on frivolous changes, slowly but surely locking all the code in and making it very difficult to change.  
-
-In agile the idea is to keep improving things on all levels so that we can keep moving fast, be it the beginning of a project or 15 years in on a mission critical solution to a complex business problem.
-
-## Design Patterns
-
 As with most things in development best practices, the design patterns suggested in OOP can be very powerful. They can also be overkill or just a waste of time, depending on the problem you are trying to solve or the code base you are working with. And, of course, they can just be misunderstood and done badly. 
 
 Instead of just trying to crowbar some patterns into a random part of the codebase, I looked for a genuine use case where the result would be of benefit. I needed a piece of code that was repeated in several places but with only slight differences in operation. I wanted to find a piece of functionality that could be clearly encapsulated and abstracted out to a pattern. Ah-ha, here we go...
@@ -44,7 +30,7 @@ async function apiCall(
                 return result.data;
             }
         } catch (err) {
-                throw err;
+                log(err);
         }
     }
 }
@@ -140,16 +126,16 @@ How do we use this?
 ```typescript 
 const policy = new ConstantPolicy();
 ```
-This functionality is now encapsulated and can/should be tested and in all ways. 
+This functionality is now encapsulated and can/should be tested and in all ways.
+
 ```typescript
 describe('constantPolicy', function() {
-    it('should be a poicy', function() {
+    it('should be a policy', function() {
         const pol = new ConstantPolicy();
         const pol0 = new ConstantPolicy(0);
         const pol1 = new ConstantPolicy(1);
 
         assert.equal(pol.currentWait(), 500);
-        assert.equal(pol.maxTime, 2500);
         assert.ok(pol.shouldRetry());
         assert.equal(pol0.shouldRetry(), false);
         assert.ok(pol1.shouldRetry());
@@ -168,7 +154,7 @@ As I tried to implement the retryer function I soon realised that it was clumsy 
 retryer(fn, args, policy);
 ```
 
-This seems ok but what if the `fn` takes no arguments? To not confuse the `retyer` you would need to pass `null` at that position. I think we can all agree that would be ugly!
+This seems ok but what if the `fn` takes no arguments? To not confuse the `retryer` you would need to pass `null` at that position. I think we can all agree that would be ugly!
 
 ## Command Pattern
 
@@ -198,8 +184,21 @@ This command class makes it easy to encapsulate our function.
 const command = new Command(callAPIFn, argsAndPayload);
 ```
 
-and now the retryer function call is much clearer
+Refactoring the above example to use the command pattern would look something like;
 
+```typescript
+class ApiCommand<T, U> implements ICommand {
+    constructor(private fn:(endpoint:string,payload: T) =>Promise<U>, private endpoint:string, private payload:T) {}
+     
+    public async execute(): Promise<U> {
+        return await this.fn(this.endpoint, this.payload);
+    }
+}
+
+const apiCommand = new ApiCommand(apiCall, endpoint, payload)
+```
+
+and now the retryer function call is much clearer
 
 ```typescript
 retryer(command, policy);
