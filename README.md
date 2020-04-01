@@ -227,4 +227,74 @@ export async function retryer(command: ICommand, policy: Ipolicy) {
 
 This function makes it clear why we programmed to the interfaces. Any class that implements the Ipolicy interface will work here, which means it is reusable. The policy can have any functionality it needs to decide if `shouldRetry()` returns true or false and how long each `currentWait()` should be. 
 
-Rather than re implementing the retry logic each time and mixing this logic in with what ever is being retried we can seperate things making it easier to test and easier to change in future
+Putting this all together would look like;
+
+```typescript
+async function apiCall(
+    endpoint: string,
+    payload: ReqDate,
+): Promise<results> {
+        try {
+            const result = await axios.post(
+                endpoint,
+                {
+                    ...payload,
+                },
+                request_config
+            );
+            if (result && result.data) {
+                return result.data;
+            }
+        } catch (err) {
+                log(err);
+        }
+    }
+}
+
+class ApiCommand<T, U> implements ICommand {
+    constructor(private fn: (endpoint: string, payload: T) => Promise<U>, private endpoint: string, private payload: T) {}
+     
+    public async execute(): Promise<U> {
+        return await this.fn(this.endpoint, this.payload);
+    }
+}
+
+const apiCommand = new ApiCommand(apiCall, endpoint, payload)
+
+export class ConstantPolicy implements Ipolicy {
+    private retryCount: number;
+    constructor(public maxTries: number = 5, private initWaitTime: number = 500) {
+        this.retryCount = 0;
+    }
+    currentWait() {
+        return this.initWaitTime;
+    }
+    shouldRetry(err) {
+        if (err.response && err.response.status >= 400) {
+            return false
+        } else if (this.retryCount < this.maxTries) {
+            return true;
+        }
+        return false;
+    }
+    incrementTry() {
+        this.retryCount++;
+    }
+}
+
+export async function retryer(command: ICommand, policy: Ipolicy) {
+    while (true) {
+        try {
+            policy.incrementTry();
+            return await command.execute();
+        } catch (error) {
+            if (policy.shouldRetry(err)) {
+                await delay(policy.currentWait());
+            } else {
+                return;
+            }
+        }
+    }
+}
+```
+Rather than re implementing the retry logic each time and mixing this logic in with what ever is being retried we can seperate things making it easier to test and easier to change in future.
