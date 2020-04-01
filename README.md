@@ -3,7 +3,7 @@
 
 As with most things in development best practices, the design patterns suggested in OOP can be very powerful. They can also be overkill or just a waste of time, depending on the problem you are trying to solve or the code base you are working with. And, of course, they can just be misunderstood and done badly. 
 
-Instead of just trying to crowbar some patterns into a random part of the codebase, I looked for a genuine use case where the result would be of benefit. I needed a piece of code that was repeated in several places but with only slight differences in operation. I wanted to find a piece of functionality that could be clearly encapsulated and abstracted out to a pattern. Ah-ha, here we go...
+Instead of trying to crowbar some patterns into a random part of the codebase, I looked for a genuine use case where the result would be of benefit. I needed a piece of code that was repeated in several places but with only slight differences in operation. I wanted to find a piece of functionality that could be clearly encapsulated and abstracted out to a pattern. Ah-ha, here we go...
 
 ## The Opportunity
 
@@ -75,15 +75,19 @@ function delay(ms: number): Promise<void> {
 }
 ```
 
-This code will now retry if it results in a temporary error and there is a chance the other service will recover. It is very specific to the retry policy. You can now only use this function in certain cases, that being when you want to retry in constant intervals and a certain number of times. As I said earlier, there are a lot of places we call APIs and with the above approach they will all need their own implementation. 
+This code will now retry if it results in a temporary error and there is a chance the other service will recover. It is very specific to the retry policy. You can now only use this function in certain cases, that being when you want to retry in constant intervals and a certain number of times. As I said earlier, there are a lot of places we call APIs and with the above approach they will all need their own implementation of this retry logic. 
 
-I decided to see if I could improve this and abstract the retry code out that can be reused. 
+I decided to see if I could improve this and abstract the retry code out so that it  could be reused. 
 
 I spoke with a senior engineer within my company and he paired with me to create a solution that would be easily testable as well as encapsulated.
 
-## Retry Policy - Strategy
+## Retry Policy - Strategy Pattern
 
-First, we looked at implementing a policy class.  Using the best practice of writing to an interface we came up with;
+Strategy is a behavioral design pattern that lets you define a family of algorithms, put each of them into a separate class, and make their objects interchangeable.
+
+In our example, the family of algorithms are different retry policies. 
+
+First, we designed an interface for the policies;
 
 ```typescript
 export interface Ipolicy {
@@ -94,7 +98,7 @@ export interface Ipolicy {
 }
 ```
 
-The idea behind doing this is so that we can write as many different policy classes as we need and as long as they implement this interface they will work with our new retry code.
+The idea behind doing this is so that we can write as many different policy classes as we need and as long as they implement this interface they will work with our new retry code. Their public facing APIs mean they can be used interchangably with other classes the implement this interface.
 
 Most times when retrying you would want to wait some time between retries. The simplest example would be to just wait a set amount of time each retry. In this example the default is 500ms
 
