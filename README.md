@@ -116,7 +116,7 @@ export class ConstantPolicy implements Ipolicy {
             return false
         } else if (this.retryCount < this.maxTries) {
             return true;
-        }
+      err
         return false;
     }
     incrementTry() {
@@ -124,6 +124,35 @@ export class ConstantPolicy implements Ipolicy {
     }
 }
 ```
+
+Another strategy we could take with retries is to back off trying exponentially longer each time;
+
+```typescript
+export class ExpoPolicy implements Ipolicy {
+    public maxTime: number;
+    private retryCount: number;
+    constructor(public maxTries: number = 5, private initWaitTime: number = 500) {
+        this.maxTime = maxTries * initWaitTime;
+        this.retryCount = 0;
+    }
+    currentWait() {
+        return Math.pow(this.initWaitTime, this.retryCount);
+    }
+    shouldRetry(err) {
+        if (err.response && err.response.status >= 400) {
+            return false
+        } else if (this.retryCount < this.maxTries) {
+            return true;
+      err
+        return false;
+    }
+    incrementTry() {
+        this.retryCount++;
+    }
+}
+```
+
+You can see that both of these classes have a `currentWait()` method but that they calculate that time differently. The code using this class doesn't need to know how this number is calculated or even which one of these 2 classes it is using. 
 
 This policy has all we need to know when retrying a call. It has a limit to the number of times we retry in this case 5. The `shouldRetry` checks if we have reached that number returning `false` when we do. Also, there is a way to increment the count. This logic can be much more complicated of course with the `currentWait` returning exponentially larger times and so on.
 
@@ -263,6 +292,10 @@ class ApiCommand<T, U> implements ICommand {
     }
 }
 
+const endpoint = 'v1/mickey/mouse'
+
+const payload = {id: 1, ear: 'big', braces: true}
+ 
 const apiCommand = new ApiCommand(apiCall, endpoint, payload)
 
 export class ConstantPolicy implements Ipolicy {
