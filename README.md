@@ -1,4 +1,4 @@
-# retrier
+# Retryer
 # Design Patterns in Typescript
 
 As with most things in development best practices, the design patterns suggested in OOP can be very powerful. They can also be overkill or just a waste of time, depending on the problem you are trying to solve or the code base you are working with. And, of course, they can just be misunderstood and done badly. 
@@ -191,7 +191,7 @@ This seems ok but what if the `fn` takes no arguments? To not confuse the `retry
 
 ## Command Pattern
 
-I needed a way to encapsulate the command to be (re)tried. 
+I needed a way to encapsulate the function to be (re)tried. There is, of course, a pattern for that. It means we can hide the function behind a generic interface so that it can be used uniformly where ever we want without having to make any changes.
 
 ```typescript
 interface ICommand { 
