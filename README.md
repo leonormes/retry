@@ -341,3 +341,21 @@ try {
 }
 ```
 Rather than re implementing the retry logic each time and mixing this logic in with what ever is being retried we can seperate things making it easier to test and easier to change in future.
+
+When you realise that waiting 500ms each time is not the correct thing to do here you can change the policy without changing any other code. 
+
+```typescript
+const policy = new ExpoPolicy();
+```
+
+Well actually we need to randomise the delay between calls to stop lots of calls retrying at the same time;
+
+```typescript
+const policy = new JitterPolicy();
+```
+
+Oh, you know what? We need this waits to not exceed our SLAs;
+
+```typescript
+const policy = new SlaPolicy();
+```
