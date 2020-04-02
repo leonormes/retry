@@ -5,6 +5,13 @@ import { ConstantPolicy } from '../src/ConstantPolicy';
 import { Command } from '../src/command';
 import * as assert from 'assert';
 
+class Fatal extends Error {
+    public response: any;
+    constructor() {
+        super()
+    this.response = {status: 500} 
+    }
+}
 describe('retryer ok', function() {
     it('should allow retry when tries below max allowed', async function() {
         const functionStub = sinon.fake.returns('API call successful');
@@ -19,7 +26,7 @@ describe('retryer ok', function() {
     });
 });
 
-describe('retryer with error', function() {
+describe('retryer with transient error', function() {
     it('retries a given function', async function() {
         const fn2 = sinon.fake.throws(new Error('API failed'));
         const delaySpy = sinon.spy(delay, 'delay');
@@ -31,5 +38,18 @@ describe('retryer with error', function() {
         assert.equal(result, undefined);
         assert.ok(fn2.calledTwice, 'function not called twice');
         assert.ok(delaySpy.called, 'delay not called');
+        delaySpy.restore()
+    });
+    it('does not retry a given function with fatal error', async function() {
+        const fn2 = sinon.fake.throws(new Fatal());
+        const delaySpy = sinon.spy(delay, 'delay');
+        const policy = new ConstantPolicy(2, 0);
+        const command = new Command<string, null>(fn2);
+
+        const result = await retryer(command, policy);
+
+        assert.equal(result, undefined);
+        assert.ok(fn2.calledOnce, 'function not called twice');
+        assert.equal(delaySpy.called, false, 'delay not called');
     });
 });
