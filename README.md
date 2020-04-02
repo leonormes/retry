@@ -83,7 +83,8 @@ I spoke with a senior engineer within my company and he paired with me to create
 
 ## Retry Policy - Strategy Pattern
 
-Strategy is a behavioural design pattern that lets you define a family of algorithms, put each of them into a separate class, and make their objects interchangeable.
+> Strategy is a behavioural design pattern that lets you define a family of algorithms, put each of them into a separate class, and make their objects interchangeable.
+>
 
 In our example, the family of algorithms are different retry policies. 
 
@@ -199,13 +200,15 @@ This is a clear solution, but as we are looking at the Design Patterns it would 
 
 ## Command Pattern
 
-I needed a way to encapsulate the function to be (re)tried. There is, of course, a pattern for that. It means we can hide the function behind a generic interface so that it can be used uniformly where ever we want without having to make any changes. This approach also means that the command can be as complex or as simple as needed without having to change the retryer implementation. 
+> Command is a behavioural design pattern that turns a request into a stand-alone object that contains all information about the request. This transformation lets you parameterize methods with different requests, delay or queue a request’s execution, and support undo able operations.
+
+I needed a way to encapsulate the function to be (re)tried. There is, of course, a pattern for that. It means we can hide the function behind a generic interface so that it can be used uniformly where ever we want without having to make any changes. This approach also means that the command can be as complex or as simple as needed without having to change the Retryer implementation. 
 
 Here is the interface;
 
 ```typescript
 interface ICommand { 
-    execute(): unknown;
+    execute();
 }
 ```
 
@@ -245,13 +248,13 @@ class ApiCommand<T, U> implements ICommand {
 const apiCommand = new ApiCommand(callAPI: function, endpoint: string, payload: payload)
 ```
 
-and now the retryer function call is much clearer
+and now the Retryer function call is much clearer;
 
 ```typescript
 retryer(command, policy);
 ```
 
-Here is one way you could use these classes in a retryer function;
+Here is one way you could use these classes in a Retryer function;
 
 ```typescript
 export async function retryer(command: ICommand, policy: Ipolicy) {
@@ -348,15 +351,16 @@ const payload = {id: 1, ears: 'big', braces: true}
  
 const apiCommand = new ApiCommand(callAPI, endpoint, payload)
 
+let result;
 try {
-    const result = await retryer(apiCommand, policy)
+    result = await retryer(apiCommand, policy)
 } catch(err) {
     log(err);
 }
 ```
-Rather than re implementing the retry logic each time and mixing this logic in with what ever is being retried we can separate things making it easier to test and easier to change in future.
+Rather than re implementing the retry logic each time and mixing this logic in with what ever is being retried we can separate things making it easier to test, easier to reuse and easier to change in future.
 
-When you realise that waiting 500ms each time is not the correct thing to do here you can change the policy without changing any other code. 
+For instance, when you realise that waiting 500ms each time is not the correct thing to do here you can change the policy without changing any other code. 
 
 ```typescript
 const policy = new ExpoPolicy();
@@ -374,4 +378,6 @@ Oh, you know what? We need these waits to not exceed our SLAs;
 const policy = new SlaPolicy();
 ```
 
-As you can see, these patterns are useful for making code reusable and more generic so that a piece of code solves more problems. When the code-base is like this it means getting more done with less lines of code. Less lines of code means less places for bugs! 
+As you can see, these patterns are useful for making code reusable and more generic so that one piece of code can be used to solve more problems. When the code-base is like this it means getting more done with less lines of code. Less lines of code means less places for bugs! 
+
+If this is something you are interested in learning more about I highly recommend [Refactoring Guru](https://refactoring.guru/)
