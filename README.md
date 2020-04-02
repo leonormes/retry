@@ -3,7 +3,7 @@
 
 As with most things in development best practices, the design patterns suggested in OOP can be very powerful. They can also be overkill or just a waste of time, depending on the problem you are trying to solve or the code base you are working with. And, of course, they can just be misunderstood and done badly. 
 
-Instead of trying to crowbar some patterns into a random part of the codebase, I looked for a genuine use case where the result would be of benefit. I needed a piece of code that was repeated in several places but with only slight differences in operation. I wanted to find a piece of functionality that could be clearly encapsulated and abstracted out to a pattern. Ah-ha, here we go...
+Instead of trying to crowbar some patterns into a random part of the code-base, I looked for a genuine use case where the result would be of benefit. I needed a piece of code that was repeated in several places but with only slight differences in operation. I wanted to find a piece of functionality that could be clearly encapsulated and abstracted out to a pattern. Ah-ha, here we go...
 
 ## The Opportunity
 
@@ -14,7 +14,7 @@ There are two kinds of errors with a call to an external service; transient or f
 Here is an example of a call to an endpoint with a payload using the node library `axios`.
 
 ```typescript
-async function apiCall(
+async function callAPI(
     endpoint: string,
     payload: ReqDate,
 ): Promise<results> {
@@ -41,7 +41,7 @@ The `apiCall` function is used in a few different places and may or may not retu
 This function does one thing. It tries to call an endpoint and throws an error if it goes wrong. The only problem here is we would need to retry if there is a transient error. Adding some logic to achieve this retrying gives us;
 
 ```typescript
-async function apiCall(
+async function callAPI(
     endpoint: string,
     payload: IReqDate,
 ): Promise<results> {
@@ -83,7 +83,7 @@ I spoke with a senior engineer within my company and he paired with me to create
 
 ## Retry Policy - Strategy Pattern
 
-Strategy is a behavioral design pattern that lets you define a family of algorithms, put each of them into a separate class, and make their objects interchangeable.
+Strategy is a behavioural design pattern that lets you define a family of algorithms, put each of them into a separate class, and make their objects interchangeable.
 
 In our example, the family of algorithms are different retry policies. 
 
@@ -98,7 +98,7 @@ export interface Ipolicy {
 }
 ```
 
-The idea behind doing this is so that we can write as many different policy classes as we need and as long as they implement this interface they will work with our new retry code. Their public facing APIs mean they can be used interchangably with other classes the implement this interface.
+The idea behind doing this is so that we can write as many different policy classes as we need and as long as they implement this interface they will work with our new retry code. Their public facing APIs mean they can be used interchangeably with other classes the implement this interface.
 
 Most times when retrying you would want to wait some time between retries. The simplest example would be to just wait a set amount of time each retry. In this example the default is 500ms
 
@@ -152,7 +152,7 @@ export class ExpoPolicy implements Ipolicy {
 
 You can see that both of these classes have a `currentWait()` method but that they calculate that time differently. The code using this class doesn't need to know how this number is calculated or even which one of these 2 classes it is using. 
 
-This policy has all we need to know when retrying a call. It has a limit to the number of times we retry in this case 5. The `shouldRetry` checks if we have reached that number returning `false` when we do. Also, there is a way to increment the count. This logic can be much more complicated of course with the `currentWait` returning exponentially larger times and so on.
+This policy has all we need to know when retrying a call. It has a limit to the number of times we retry in this case 5. The `shouldRetry()`method checks if we have reached that number returning `false` when we do. Also, there is a way to increment the count. This logic can be much more complicated of course with the `currentWait` returning exponentially larger times and so on.
 
 How do we use this?
 
@@ -189,15 +189,29 @@ retryer(fn, args, policy);
 
 This seems ok but what if the `fn` takes no arguments? To not confuse the `retryer` you would need to pass `null` at that position. I think we can all agree that would be ugly!
 
+One idea would be to use a lambda;
+
+```typescript
+retryer(() => fn(args), policy);
+```
+
+This is a clear solution, but as we are looking at the Design Patterns it would be nice to complete this solution with another pattern.
+
 ## Command Pattern
 
-I needed a way to encapsulate the function to be (re)tried. There is, of course, a pattern for that. It means we can hide the function behind a generic interface so that it can be used uniformly where ever we want without having to make any changes.
+I needed a way to encapsulate the function to be (re)tried. There is, of course, a pattern for that. It means we can hide the function behind a generic interface so that it can be used uniformly where ever we want without having to make any changes. This approach also means that the command can be as complex or as simple as needed without having to change the retryer implementation. 
+
+Here is the interface;
 
 ```typescript
 interface ICommand { 
     execute(): unknown;
 }
+```
 
+It has one public method, `execute()`, that will run the code.
+
+```typescript
 class Command<T, U> implements ICommand {
     constructor(private fn: (payload?: T) => Promise<U>, private payload?: T) {}
 
@@ -228,7 +242,7 @@ class ApiCommand<T, U> implements ICommand {
     }
 }
 
-const apiCommand = new ApiCommand(apiCall, endpoint, payload)
+const apiCommand = new ApiCommand(callAPI: function, endpoint: string, payload: payload)
 ```
 
 and now the retryer function call is much clearer
@@ -237,7 +251,7 @@ and now the retryer function call is much clearer
 retryer(command, policy);
 ```
 
-What does this retryer function look like
+Here is one way you could use these classes in a retryer function;
 
 ```typescript
 export async function retryer(command: ICommand, policy: Ipolicy) {
@@ -256,12 +270,12 @@ export async function retryer(command: ICommand, policy: Ipolicy) {
 }
 ```
 
-This function makes it clear why we programmed to the interfaces. Any class that implements the Ipolicy interface will work here, which means it is reusable. The policy can have any functionality it needs to decide if `shouldRetry()` returns true or false and how long each `currentWait()` should be. 
+This function makes it clear why we programmed to the interfaces. Any class that implements the `Ipolicy` and `ICommand` interfaces will work here, which means it is reusable. The policy can have any functionality it needs to decide if `shouldRetry()` returns true or false and how long each `currentWait()` should be. 
 
 Putting this all together would look like;
 
 ```typescript
-async function apiCall(
+async function callAPI(
     endpoint: string,
     payload: ReqDate,
 ): Promise<results> {
@@ -332,7 +346,7 @@ const endpoint = 'v1/mickey/mouse'
 
 const payload = {id: 1, ears: 'big', braces: true}
  
-const apiCommand = new ApiCommand(apiCall, endpoint, payload)
+const apiCommand = new ApiCommand(callAPI, endpoint, payload)
 
 try {
     const result = await retryer(apiCommand, policy)
@@ -340,7 +354,7 @@ try {
     log(err);
 }
 ```
-Rather than re implementing the retry logic each time and mixing this logic in with what ever is being retried we can seperate things making it easier to test and easier to change in future.
+Rather than re implementing the retry logic each time and mixing this logic in with what ever is being retried we can separate things making it easier to test and easier to change in future.
 
 When you realise that waiting 500ms each time is not the correct thing to do here you can change the policy without changing any other code. 
 
@@ -354,8 +368,10 @@ Well actually we need to randomise the delay between calls to stop lots of calls
 const policy = new JitterPolicy();
 ```
 
-Oh, you know what? We need this waits to not exceed our SLAs;
+Oh, you know what? We need these waits to not exceed our SLAs;
 
 ```typescript
 const policy = new SlaPolicy();
 ```
+
+As you can see, these patterns are useful for making code reusable and more generic so that a piece of code solves more problems. When the code-base is like this it means getting more done with less lines of code. Less lines of code means less places for bugs! 
