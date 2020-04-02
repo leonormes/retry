@@ -10,11 +10,11 @@ describe('constantPolicy', function() {
 
         assert.equal(pol.currentWait(), 500);
         assert.equal(pol.maxTime, 2500);
-        assert.ok(pol.shouldRetry());
-        assert.equal(pol0.shouldRetry(), false);
-        assert.ok(pol1.shouldRetry());
+        assert.ok(pol.shouldRetry({}));
+        assert.equal(pol0.shouldRetry({}), false);
+        assert.ok(pol1.shouldRetry({}));
         pol1.incrementTry();
-        assert.equal(pol1.shouldRetry(), false);
+        assert.equal(pol1.shouldRetry({}), false);
     });
 });
 describe('expoPolicy', function() {
@@ -25,10 +25,10 @@ describe('expoPolicy', function() {
 
         assert.equal(pol.currentWait(), 1);
         assert.equal(pol.maxTime, 2500);
-        assert.ok(pol.shouldRetry());
-        assert.equal(pol0.shouldRetry(), false);
-        assert.ok(pol1.shouldRetry());
+        assert.ok(pol.shouldRetry({}));
+        assert.equal(pol0.shouldRetry({}), false);
+        assert.ok(pol1.shouldRetry({}));
         pol1.incrementTry();
-        assert.equal(pol1.shouldRetry(), false);
+        assert.equal(pol1.shouldRetry({}), false);
     });
 });

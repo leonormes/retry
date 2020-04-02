@@ -13,7 +13,7 @@ describe('retryer ok', function() {
 
         const result = await retryer(command, policy);
 
-        assert.ok(policy.shouldRetry(), 'shouldRetry returned false instead of true');
+        assert.ok(policy.shouldRetry({}), 'shouldRetry returned false instead of true');
         assert.ok(result === 'API call successful', 'Given function failed');
         assert.ok(functionStub.calledOnce, 'function not called exactly once');
     });

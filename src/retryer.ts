@@ -9,7 +9,7 @@ export async function retryer(command: ICommand, policy: Ipolicy) {
             policy.incrementTry();
             return await command.execute();
         } catch (error) {
-            if (policy.shouldRetry()) {
+            if (policy.shouldRetry(error)) {
                 await delay(policy.currentWait());
             } else {
                 return;

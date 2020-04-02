@@ -9,8 +9,11 @@ export class ExpoPolicy implements Ipolicy {
     currentWait() {
         return Math.pow(this.initWaitTime, this.retryCount);
     }
-    shouldRetry() {
-        if (this.retryCount < this.maxTries) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    shouldRetry(err: any) {
+        if (err && err.response && err.response.status >= 400) {
+            return false;
+        } else if (this.retryCount < this.maxTries) {
             return true;
         }
         return false;

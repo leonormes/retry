@@ -2,7 +2,7 @@ export interface Ipolicy {
     maxTime: number;
     maxTries: number;
     currentWait: () => number;
-    shouldRetry: () => boolean;
+    shouldRetry: (err: unknown) => boolean;
     incrementTry: () => void;
 }
 
