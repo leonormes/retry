@@ -370,7 +370,7 @@ Rather than re implementing the retry logic each time and mixing this logic in w
 For instance, when you realise that waiting 500ms each time is not the correct thing to do here you can change the policy without changing any other code. 
 
 ```typescript
-const policy = new ExpoPolicy();
+const policy = new ExponentialPolicy();
 ```
 
 Then you realise that actually you need to randomise the delay between calls to stop lots of calls retrying at the same time;
