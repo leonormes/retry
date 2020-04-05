@@ -1,6 +1,12 @@
 # Retryer
 # Design Patterns in Typescript
 
+On the Gateway Team at Tessian we have a passion for quality. We continually look for ways to improve our code and our process. We realised quite early on that if we were going to be leaders in cyber-security we needed to be solution orientated about anything that slowed us down or took us away from our primary focus of writing the features that would help our customers protect the human layer.
+
+With this in mind though, there are many problems that already have solutions and code complexity as a problem does have multiple mitigating practices. Code complexity will never be solved but it can be held at bay with disciplined and thoughtful development practises.
+
+This short post will give some examples of using design patterns in Typescript to create a useful helper class that reduces coupled code and reduces the line count as well as encapsulating pieces of code. 
+
 As with most things in development best practices, the design patterns suggested in OOP can be very powerful. They can also be overkill or just a waste of time, depending on the problem you are trying to solve or the code base you are working with. And, of course, they can be misunderstood and done badly. 
 
 Instead of trying to crowbar some patterns into a random part of the code-base, I looked for a genuine use case where the result would be of benefit. I needed a piece of code that was repeated in several places but with only slight differences in operation. I wanted to find a piece of functionality that could be clearly encapsulated and abstracted out to a pattern. Ah-ha, here we go...
@@ -9,14 +15,16 @@ Instead of trying to crowbar some patterns into a random part of the code-base, 
 
 Within our client code, we call multiple distinct APIs. As we should with all distributed software we expect and prepare for errors.
 
-There are two kinds of errors with a call to an external service; transient or fatal. To handle a transient error it is a good idea to just try again as the system on the other end may recover and return the results you need. We don't want to keep retying forever and different cases call for different retry policies. For instance, you might want to wait longer periods between retrying or limit the number of times you retry. 
+There are two kinds of errors with a call to an external service; transient or fatal. Fatal is as bad as it sounds. The endpoint is broken and there is nothing to do. In this case we forget the request and probably alert a human! A much more common type of error is the transient kind. It just means temporary error. Maybe the other service was too busy at that moment or the connection went wonky. To handle a transient error it is a good idea to just try again as the system on the other end may recover and return the results you need.
+
+We don't want to keep retying forever and different cases call for different retry policies. For instance, you might want to wait longer periods between retrying or limit the number of times you retry. 
 
 Here is an example of a call to an endpoint with a payload using the node library `axios`.
 
 ```typescript
 async function callAPI(
     endpoint: string,
-    payload: ReqDate,
+    payload: IPayload,
 ): Promise<results> {
         try {
             const result = await axios.post(
@@ -30,20 +38,20 @@ async function callAPI(
                 return result.data;
             }
         } catch (err) {
-                log(err);
+                log(err); // I mean handle error
         }
     }
 }
 ```
 
-The `apiCall` function is used in a few different places and may or may not return results. 
+The `apiCall` function is used in a few different places and may or may not return results. If there are no results nothing is returned.  
 
-This function does one thing (another suggested best practise). It tries to call an endpoint and throws an error if it goes wrong. The only problem here is we would need to retry if there is a transient error. Adding some logic to achieve this retrying gives us;
+This function does one thing (another suggested best practise). It tries to call an endpoint and throws an error if it goes wrong. It is when there is a transient error that we would need to retry. Adding some logic to achieve this retrying functionality gives us;
 
 ```typescript
 async function callAPI(
     endpoint: string,
-    payload: IReqDate,
+    payload: IPayload,
 ): Promise<results> {
     const max_tries = 3;
     const wait = 1500;
@@ -69,20 +77,22 @@ async function callAPI(
 }
 ```
 
-This code will now retry if it results in a temporary error and there is a chance the other service will recover. It is very specific to the retry policy. You can now only use this function in certain cases, that being when you want to retry in constant intervals and a certain number of times. As I said earlier, there are a lot of places we call APIs and with the above approach they will all need their own implementation of this retry logic. 
+This code loops for as long as `attemp_count` is less than `max_tries` and the error is not fatal. There is a short delay between trying again. 
 
-I decided to see if I could improve this and abstract the retry code out so that it  could be reused. Is there are way to separate the retry and the calling code?
+It is very specific to the retry policy. You can now only use this function in certain cases, that being when you want to retry in constant intervals and a certain number of times. As I said earlier, there are a lot of places we call APIs and with the above approach they will all need their own implementation of this retry logic.
 
-I spoke with a senior engineer within my company and he paired with me to create a solution that would be easily testable as well as encapsulated.
+I decided to see if I could improve this and abstract the retry code out so that it could be reused. Is there are way to separate the retry logic and the code that calls the endpoint?
+
+I spoke with a senior engineer at Tessian and he paired with me to create a solution that would be easily testable as well as encapsulated.
 
 ## Retry Policy - Strategy Pattern
 
 > Strategy is a behavioural design pattern that lets you define a family of algorithms, put each of them into a separate class, and make their objects interchangeable.
 >
 
-In our example, the family of algorithms are different retry policies. 
+In our example, the family of algorithms is different retry policies. 
 
-First, we designed an interface for the policies;
+When using design patterns you must program to an interface. This is where we started by designing an interface for the policies;
 
 ```typescript
 export interface Ipolicy {
@@ -93,11 +103,11 @@ export interface Ipolicy {
 }
 ```
 
-This interface doesn't restrict the class that implements it to only have these properties and methods, just that they should have *at least* these public members. It can have as much extra functionality as needed to fulfil the job of retrying a given command.
+This interface doesn't restrict a class that implements it to only have these properties and methods. It means that they should have *at least* these public members. The implementation can have as much extra functionality as needed to fulfil the job of retrying a given command.
 
-The idea behind doing this is so that we can write as many different policy classes as we need and as long as they implement this interface they will work with our new retry code. Their public facing APIs mean they can be used interchangeably with other classes the implement this interface.
+The idea behind doing this is so that we can write as many different policy classes as we need and as long as they implement this interface they will work with our new retry code. Their public facing APIs mean they can be used interchangeably with other classes that implement this interface.
 
-Most times when retrying you would want to wait some time between retries. The simplest example would be to just wait a set amount of time each retry. In this example the default is 500ms and the number of times to try before giving up is 5;
+Most times when retrying you would want to wait some time between retries. The simplest example would be to just wait a set amount of time. In this example the default is 500ms and the number of times to try before giving up is 5;
 
 ```typescript
 export class ConstantPolicy implements Ipolicy {
@@ -149,7 +159,7 @@ export class ExpoPolicy implements Ipolicy {
 
 You can see that both of these classes have a `currentWait()` method but that they calculate that time differently. The code using this class doesn't need to know how this number is calculated or even which one of these 2 classes it is using. As long as there is a `currentWait()` method and it returns a `number` that can be used to set a timeout it will work. 
 
-This policy has all we need to know when retrying a call. The `shouldRetry()`method checks if we have reached the max number of times to try returning `false` if we has. Also, there is a method that increment the try count. This logic can be much more complicated of course with the `currentWait` returning exponentially larger times and so on.
+This policy has everything we need to know when retrying a call. The `shouldRetry()`method checks if we have reached the max number of times to try returning `false` if we have. Also, there is a method that increment the try count. This logic can be much more complicated of course with the `currentWait` returning exponentially larger times and so on.
 
 How do we use this?
 
@@ -208,14 +218,14 @@ interface ICommand {
 }
 ```
 
-It has one public method, `execute()`, that will run the code.
+It has one public method, `execute()`, that will execute the code.
 
 ```typescript
 class Command<T> implements ICommand {
-    constructor(private fn: () => Promise<T>) {}
+    constructor(private fn: () => T) {}
 
-    public async execute(): Promise<T> {
-        return await this.fn();
+    public execute(): T {
+        return this.fn();
     }
 }
 ```
@@ -247,7 +257,7 @@ const apiCommand = new ApiCommand(callAPI: function, endpoint: string, payload: 
 and now the Retryer function call is much clearer;
 
 ```typescript
-retryer(command, policy);
+retryer(apiCommand, constantPolicy);
 ```
 
 Here is one way you could use these classes in a Retryer function;
@@ -262,7 +272,7 @@ async function retryer(command: ICommand, policy: Ipolicy) {
             if (policy.shouldRetry(err)) {
                 await delay(policy.currentWait());
             } else {
-                return; // Handle fatal error!
+                return; // Tell the humans!
             }
         }
     }
@@ -271,7 +281,7 @@ async function retryer(command: ICommand, policy: Ipolicy) {
 
 This function makes it clear why we programmed to the interfaces. Any class that implements the `Ipolicy` and `ICommand` interfaces will work here, which means it is reusable. The policy can have any functionality it needs to decide if `shouldRetry()` returns true or false and how long each `currentWait()` should be. 
 
-Putting this all together would look like;
+Putting this all together would look like (You would separate the code into files);
 
 ```typescript
 // The function to be tried
