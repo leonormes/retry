@@ -77,7 +77,7 @@ async function callAPI(
 }
 ```
 
-This code loops for as long as `attemp_count` is less than `max_tries` and the error is not fatal. There is a short delay between trying again. 
+This code loops for as long as `attemp_count` is less than or equal to `max_tries` and the error is not fatal. There is a short delay between trying again. 
 
 It is very specific to the retry policy. You can now only use this function in certain cases, that being when you want to retry in constant intervals and a certain number of times. As I said earlier, there are a lot of places we call APIs and with the above approach they will all need their own implementation of this retry logic.
 
