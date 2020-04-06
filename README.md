@@ -1,11 +1,11 @@
 # Retryer
 # Design Patterns in Typescript
 
-On the Gateway Team at Tessian we have a passion for quality. We continually look for ways to improve our code and our process. We realised quite early on that if we were going to be leaders in cyber-security we needed to be solution orientated about anything that slowed us down or took us away from our primary focus of writing the features that would help our customers protect the human layer.
+At Tessian we have a passion for quality. We look for ways to improve our code and our processes with as much care as we do writing code. We realised quite early on that if we were going to be leaders in cyber-security we needed to be solution orientated about anything that slowed us down or took us away from our primary focus of writing the features that would help our customers protect the human layer.
 
-With this in mind though, there are many problems that already have solutions and code complexity as a problem does have multiple mitigating practices. Code complexity will never be solved but it can be held at bay with disciplined and thoughtful development practises.
+Many of the problems faced by developers already have solutions. Code complexity, for instance, as a problem does have many mitigating practices. We will not solve code complexity but it can be held at bay with disciplined and thoughtful development practises.
 
-This short post will give some examples of using design patterns in Typescript to create a useful helper class that reduces coupled code and reduces the line count as well as encapsulating pieces of code. 
+This post will give some examples of using design patterns in Typescript.
 
 As with most things in development best practices, the design patterns suggested in OOP can be very powerful. They can also be overkill or just a waste of time, depending on the problem you are trying to solve or the code base you are working with. And, of course, they can be misunderstood and done badly. 
 
@@ -13,7 +13,7 @@ Instead of trying to crowbar some patterns into a random part of the code-base, 
 
 ## The Opportunity
 
-Within our client code, we call multiple distinct APIs. As we should with all distributed software we expect and prepare for errors.
+Within our client code we call multiple distinct APIs. As we should with all distributed software we expect and prepare for errors.
 
 There are two kinds of errors with a call to an external service; transient or fatal. Fatal is as bad as it sounds. The endpoint is broken and there is nothing to do. In this case we forget the request and probably alert a human! A much more common type of error is the transient kind. It just means temporary error. Maybe the other service was too busy at that moment or the connection went wonky. To handle a transient error it is a good idea to just try again as the system on the other end may recover and return the results you need.
 
