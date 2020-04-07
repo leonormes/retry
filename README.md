@@ -81,7 +81,7 @@ This code loops for as long as `attemp_count` is less than or equal to `max_trie
 
 This implementation is very specific to this retry policy. You can now only use this function in certain cases, that being when you want to retry in constant intervals and a certain number of times. As I said earlier, there are a lot of places we call APIs and with the above approach they will all need their own implementation of this retry logic. Worse, if you wanted to make changes to they way you retry you would need to make changes in lots of places and adjust lots of tests.
 
-We decided to see if we could improve this and abstract the retry code out so that it could be reused. Is there are way to separate the retry logic and the code that calls the endpoint.
+We decided to see if we could improve this and abstract the retry code out so that it could be reused. Is there are way to separate the retry logic and the code that calls the endpoint?
 
 ## Retry Policy - Strategy Pattern
 
