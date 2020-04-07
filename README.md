@@ -1,15 +1,15 @@
 # Retryer
 # Design Patterns in Typescript
 
-At Tessian we have a passion for quality. We look for ways to improve our code and our processes with as much care as we do writing code. We realised quite early on that if we were going to be leaders in cyber-security we needed to be solution orientated about anything that slowed us down or took us away from our primary focus of writing the features that would help our customers protect the human layer.
+At Tessian we have a passion for quality. We look for ways to improve our code and our processes with as much care and thought as we do creating our products. We realised early on that if we were going to be leaders in cyber-security we needed to be solution orientated about anything that slowed us down or took us away from our primary focus of writing the features that would help our customers protect the human layer.
 
-Many of the problems faced by developers already have solutions. Code complexity, for instance, as a problem does have many mitigating practices. We will not solve code complexity but it can be held at bay with disciplined and thoughtful development practises.
+Many of the problems faced by developers already have solutions. Code complexity, as a common problem faced by all large code bases, does have many mitigating practices. We will not solve code complexity. What we can do is strike a balance between right over easy.
 
 This post will give some examples of using design patterns in Typescript.
 
-As with most things in development best practices, the design patterns suggested in OOP can be very powerful. They can also be overkill or just a waste of time, depending on the problem you are trying to solve or the code base you are working with. And, of course, they can be misunderstood and done badly. 
+As with most things in development best practices, the design patterns suggested in OOP can be very powerful. They can also be overkill or just a waste of time, depending on the problem you are trying to solve or the code base you are working with. And, of course, they can be misunderstood and done badly leading to more of the same problems you want to solve. 
 
-Instead of trying to crowbar some patterns into a random part of the code-base, I looked for a genuine use case where the result would be of benefit. I needed a piece of code that was repeated in several places but with only slight differences in operation. I wanted to find a piece of functionality that could be clearly encapsulated and abstracted out to a pattern. Ah-ha, here we go...
+Instead of trying to crowbar some patterns into a random part of the code-base just for the sake of using patterns, we looked for a genuine use case where the result would be of benefit. We needed a piece of code that was repeated in several places but with only slight differences in operation. We wanted to find a piece of functionality that could be clearly encapsulated and abstracted out to a pattern. Ah-ha, here we go...
 
 ## The Opportunity
 
@@ -38,13 +38,13 @@ async function callAPI(
                 return result.data;
             }
         } catch (err) {
-                log(err); // I mean handle error
+                throw err; // I mean handle error, but you can figure that out!
         }
     }
 }
 ```
 
-The `apiCall` function is used in a few different places and may or may not return results. If there are no results nothing is returned.  
+The `apiCall` function is used in a few different places and depending on the reason for the call it may or may not return results. If there are no results nothing is returned.  
 
 This function does one thing (another suggested best practise). It tries to call an endpoint and throws an error if it goes wrong. It is when there is a transient error that we would need to retry. Adding some logic to achieve this retrying functionality gives us;
 
@@ -79,18 +79,16 @@ async function callAPI(
 
 This code loops for as long as `attemp_count` is less than or equal to `max_tries` and the error is not fatal. There is a short delay between trying again. 
 
-It is very specific to the retry policy. You can now only use this function in certain cases, that being when you want to retry in constant intervals and a certain number of times. As I said earlier, there are a lot of places we call APIs and with the above approach they will all need their own implementation of this retry logic.
+This implementation is very specific to this retry policy. You can now only use this function in certain cases, that being when you want to retry in constant intervals and a certain number of times. As I said earlier, there are a lot of places we call APIs and with the above approach they will all need their own implementation of this retry logic. Worse, if you wanted to make changes to they way you retry you would need to make changes in lots of places and adjust lots of tests.
 
-I decided to see if I could improve this and abstract the retry code out so that it could be reused. Is there are way to separate the retry logic and the code that calls the endpoint?
-
-I spoke with a senior engineer at Tessian and he paired with me to create a solution that would be easily testable as well as encapsulated.
+We decided to see if we could improve this and abstract the retry code out so that it could be reused. Is there are way to separate the retry logic and the code that calls the endpoint.
 
 ## Retry Policy - Strategy Pattern
 
 > Strategy is a behavioural design pattern that lets you define a family of algorithms, put each of them into a separate class, and make their objects interchangeable.
 >
 
-In our example, the family of algorithms is different retry policies. 
+In our example, the family of algorithms are different retry policies. 
 
 When using design patterns you must program to an interface. This is where we started by designing an interface for the policies;
 
@@ -112,11 +110,11 @@ Most times when retrying you would want to wait some time between retries. The s
 ```typescript
 export class ConstantPolicy implements Ipolicy {
     private retryCount: number;
-    constructor(public maxTries: number = 5, private initWaitTime: number = 500) {
+    constructor(public maxTries: number = 5, private waitTime: number = 500) {
         this.retryCount = 0;
     }
     currentWait() {
-        return this.initWaitTime;
+        return this.waitTime;
     }
     shouldRetry(err) {
         if (err.response && err.response.status >= 400) {
