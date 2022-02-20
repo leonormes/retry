@@ -2,21 +2,21 @@ import sinon from 'ts-sinon';
 import { retryer } from '../src/retryer';
 import * as delay from '../src/delay';
 import { ConstantPolicy } from '../src/ConstantPolicy';
-import { Command } from '../src/command';
+import { GetUserSettings } from '../src/command';
 import * as assert from 'assert';
 
 class Fatal extends Error {
     public response: any;
     constructor() {
         super()
-    this.response = {status: 500} 
+    this.response = {status: 500}
     }
 }
 describe('retryer ok', function() {
     it('should allow retry when tries below max allowed', async function() {
         const functionStub = sinon.fake.returns('API call successful');
         const policy = new ConstantPolicy(2, 0);
-        const command = new Command<sinon.SinonSpy, null>(functionStub);
+        const command = new GetUserSettings<sinon.SinonSpy, null>(functionStub);
 
         const result = await retryer(command, policy);
 
@@ -31,7 +31,7 @@ describe('retryer with transient error', function() {
         const fn2 = sinon.fake.throws(new Error('API failed'));
         const delaySpy = sinon.spy(delay, 'delay');
         const policy = new ConstantPolicy(2, 0);
-        const command = new Command<string, null>(fn2);
+        const command = new GetUserSettings<string, null>(fn2);
 
         const result = await retryer(command, policy);
 
@@ -44,7 +44,7 @@ describe('retryer with transient error', function() {
         const fn2 = sinon.fake.throws(new Fatal());
         const delaySpy = sinon.spy(delay, 'delay');
         const policy = new ConstantPolicy(2, 0);
-        const command = new Command<string, null>(fn2);
+        const command = new GetUserSettings<string, null>(fn2);
 
         const result = await retryer(command, policy);
 

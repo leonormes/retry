@@ -1,8 +1,8 @@
 import { Ipolicy } from './Ipolicy';
-import { ICommand } from './command';
+import { AsyncCommand } from './command';
 import { delay } from './delay';
 
-export async function retryer(command: ICommand, policy: Ipolicy) {
+export async function retryer(command:AsyncCommand<Promise<unknown>>, policy: Ipolicy) {
     // eslint-disable-next-line no-constant-condition
     while (true) {
         try {

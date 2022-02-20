@@ -1,8 +1,8 @@
-export interface ICommand {
-    execute(): unknown;
+export interface AsyncCommand<U> {
+    execute(): U;
 }
 
-export class Command<T, U> implements ICommand {
+export class GetUserSettings<T, U> implements AsyncCommand<Promise<U>> {
     constructor(private fn: (payload?: T) => Promise<U>, private payload?: T) {}
 
     public async execute(): Promise<U> {
